@@ -1,0 +1,55 @@
+version: '3.8'
+
+services:
+  app:
+    build: .
+    container_name: split-app
+    restart: unless-stopped
+    environment:
+      - NODE_ENV=production
+      - PORT=3000
+      - DB_HOST=split-db
+      - DB_PORT=5432
+      - DB_NAME=split
+      - DB_USER=split
+      - DB_PASSWORD=${DB_PASSWORD:-splitpassword123}
+    depends_on:
+      db:
+        condition: service_healthy
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.split.rule=Host(`split.jdms.nl`)"
+      - "traefik.http.routers.split.entrypoints=websecure"
+      - "traefik.http.routers.split.tls.certresolver=letsencrypt"
+      - "traefik.http.services.split.loadbalancer.server.port=3000"
+    networks:
+      - n8n-setup_n8n-network
+      - split-internal
+
+  db:
+    image: postgres:16-alpine
+    container_name: split-db
+    restart: unless-stopped
+    environment:
+      - POSTGRES_DB=split
+      - POSTGRES_USER=split
+      - POSTGRES_PASSWORD=${DB_PASSWORD:-splitpassword123}
+    volumes:
+      - split-db-data:/var/lib/postgresql/data
+      - ./migrations/001_initial.sql:/docker-entrypoint-initdb.d/001_initial.sql
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U split -d split"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+    networks:
+      - split-internal
+
+volumes:
+  split-db-data:
+
+networks:
+  n8n-setup_n8n-network:
+    external: true
+  split-internal:
+    driver: bridge

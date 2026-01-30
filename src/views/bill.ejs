@@ -1,0 +1,102 @@
+<%- include('layout', { body: `
+<div class="bill-page" data-bill-id="${bill.id}">
+  <div class="bill-header">
+    <div>
+      <a href="/" class="back-link">← Back</a>
+      <h1>${bill.name}</h1>
+      <span class="currency-badge">${bill.currency}</span>
+    </div>
+    <div class="bill-actions">
+      <a href="/share/${bill.share_id}" target="_blank" class="btn btn-secondary">🔗 Share Link</a>
+      <form action="/bills/${bill.id}/delete" method="POST" style="display:inline" onsubmit="return confirm('Delete this bill?')">
+        <button type="submit" class="btn btn-danger">🗑️ Delete</button>
+      </form>
+    </div>
+  </div>
+
+  <div class="bill-grid">
+    <!-- Items Section -->
+    <section class="card">
+      <h2>Items</h2>
+      <form class="add-item-form" onsubmit="addItem(event)">
+        <input type="text" id="item-name" placeholder="Item name" required>
+        <input type="number" id="item-price" placeholder="Price" step="0.01" required>
+        <input type="number" id="item-qty" placeholder="Qty" value="1" min="1">
+        <button type="submit" class="btn btn-primary">Add</button>
+      </form>
+      <div id="items-list" class="items-list">
+        ${items.map(item => `
+          <div class="item" data-item-id="${item.id}">
+            <div class="item-info">
+              <span class="item-name">${item.name}</span>
+              <span class="item-price">${formatCurrency(item.price * item.quantity, bill.currency)}</span>
+              ${item.quantity > 1 ? `<span class="item-qty">×${item.quantity}</span>` : ''}
+            </div>
+            <div class="item-assignments">
+              ${participants.map(p => {
+                const assigned = assignments.some(a => a.item_id === item.id && a.participant_id === p.id);
+                return `<button class="assign-btn ${assigned ? 'assigned' : ''}" 
+                          onclick="toggleAssignment(${item.id}, ${p.id}, this)">${p.name}</button>`;
+              }).join('')}
+            </div>
+            <button class="btn-icon delete-btn" onclick="deleteItem(${item.id})">×</button>
+          </div>
+        `).join('')}
+      </div>
+    </section>
+
+    <!-- Participants Section -->
+    <section class="card">
+      <h2>Participants</h2>
+      <form class="add-participant-form" onsubmit="addParticipant(event)">
+        <input type="text" id="participant-name" placeholder="Name" required>
+        <button type="submit" class="btn btn-primary">Add</button>
+      </form>
+      <div id="participants-list" class="participants-list">
+        ${participants.map(p => `
+          <div class="participant" data-participant-id="${p.id}">
+            <span>${p.name}</span>
+            <button class="btn-icon delete-btn" onclick="deleteParticipant(${p.id})">×</button>
+          </div>
+        `).join('')}
+      </div>
+    </section>
+
+    <!-- Settings Section -->
+    <section class="card">
+      <h2>Tax & Tip</h2>
+      <div class="settings-form">
+        <div class="form-group">
+          <label>Tax %</label>
+          <input type="number" id="tax-percent" value="${bill.tax_percent || 0}" step="0.1" min="0" onchange="updateSettings()">
+        </div>
+        <div class="form-group">
+          <label>Tip %</label>
+          <input type="number" id="tip-percent" value="${bill.tip_percent || 0}" step="0.1" min="0" onchange="updateSettings()">
+        </div>
+      </div>
+    </section>
+
+    <!-- Summary Section -->
+    <section class="card summary-card">
+      <h2>Summary</h2>
+      <div id="summary-content">
+        <p class="loading">Calculating...</p>
+      </div>
+    </section>
+  </div>
+</div>
+
+<script>
+  const BILL_ID = ${bill.id};
+  const CURRENCY = '${bill.currency}';
+  loadSummary();
+</script>
+`, title: bill.name, user: user }) %>
+
+<%
+function formatCurrency(amount, currency) {
+  const symbols = { THB: '฿', USD: '$', EUR: '€', GBP: '£', JPY: '¥' };
+  return (symbols[currency] || currency + ' ') + amount.toFixed(2);
+}
+%>

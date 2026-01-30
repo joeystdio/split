@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title><%= summary.bill.name %> - Split</title>
+  <link rel="stylesheet" href="/css/style.css">
+</head>
+<body class="share-page">
+  <div class="share-container">
+    <div class="share-header">
+      <h1>🍽️ <%= summary.bill.name %></h1>
+      <p class="share-meta">Bill Summary</p>
+    </div>
+
+    <div class="share-totals">
+      <div class="total-row">
+        <span>Subtotal</span>
+        <span><%= formatCurrency(summary.subtotal, summary.bill.currency) %></span>
+      </div>
+      <% if (summary.tax > 0) { %>
+      <div class="total-row">
+        <span>Tax (<%= summary.bill.tax_percent %>%)</span>
+        <span><%= formatCurrency(summary.tax, summary.bill.currency) %></span>
+      </div>
+      <% } %>
+      <% if (summary.tip > 0) { %>
+      <div class="total-row">
+        <span>Tip (<%= summary.bill.tip_percent %>%)</span>
+        <span><%= formatCurrency(summary.tip, summary.bill.currency) %></span>
+      </div>
+      <% } %>
+      <div class="total-row total-final">
+        <span>Total</span>
+        <span><%= formatCurrency(summary.total, summary.bill.currency) %></span>
+      </div>
+    </div>
+
+    <h2>Who Owes What</h2>
+    
+    <% if (summary.shares.length === 0) { %>
+      <p class="empty-state">No participants added yet.</p>
+    <% } else { %>
+      <div class="shares-list">
+        <% summary.shares.forEach(share => { %>
+          <div class="share-card">
+            <div class="share-person">
+              <span class="person-name"><%= share.name %></span>
+              <span class="person-total"><%= formatCurrency(share.total, summary.bill.currency) %></span>
+            </div>
+            <% if (share.items.length > 0) { %>
+              <div class="share-breakdown">
+                <% share.items.forEach(item => { %>
+                  <div class="breakdown-item">
+                    <span><%= item.name %></span>
+                    <span><%= formatCurrency(item.amount, summary.bill.currency) %></span>
+                  </div>
+                <% }) %>
+                <% if (share.tax > 0) { %>
+                  <div class="breakdown-item tax">
+                    <span>+ Tax</span>
+                    <span><%= formatCurrency(share.tax, summary.bill.currency) %></span>
+                  </div>
+                <% } %>
+                <% if (share.tip > 0) { %>
+                  <div class="breakdown-item tip">
+                    <span>+ Tip</span>
+                    <span><%= formatCurrency(share.tip, summary.bill.currency) %></span>
+                  </div>
+                <% } %>
+              </div>
+            <% } else { %>
+              <p class="no-items">No items assigned</p>
+            <% } %>
+          </div>
+        <% }) %>
+      </div>
+    <% } %>
+
+    <div class="share-footer">
+      <p>Created with <a href="https://split.jdms.nl">Split</a></p>
+    </div>
+  </div>
+</body>
+</html>
+
+<%
+function formatCurrency(amount, currency) {
+  const symbols = { THB: '฿', USD: '$', EUR: '€', GBP: '£', JPY: '¥' };
+  return (symbols[currency] || currency + ' ') + amount.toFixed(2);
+}
+%>

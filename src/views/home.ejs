@@ -1,0 +1,26 @@
+<%- include('layout', { body: `
+<div class="home">
+  <div class="header">
+    <h1>Your Bills</h1>
+    <a href="/new" class="btn btn-primary">+ New Bill</a>
+  </div>
+
+  <% if (bills.length === 0) { %>
+    <div class="empty-state">
+      <p>No bills yet. Create your first bill to get started!</p>
+    </div>
+  <% } else { %>
+    <div class="bills-list">
+      <% bills.forEach(bill => { %>
+        <a href="/bills/<%= bill.id %>" class="bill-card">
+          <div class="bill-name"><%= bill.name %></div>
+          <div class="bill-meta">
+            <span><%= bill.currency %></span>
+            <span><%= new Date(bill.created_at).toLocaleDateString() %></span>
+          </div>
+        </a>
+      <% }) %>
+    </div>
+  <% } %>
+</div>
+`, title: 'Home', user: user }) %>

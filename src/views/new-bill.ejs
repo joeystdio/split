@@ -1,0 +1,28 @@
+<%- include('layout', { body: `
+<div class="new-bill">
+  <h1>Create New Bill</h1>
+  
+  <form action="/bills" method="POST" class="form">
+    <div class="form-group">
+      <label for="name">Bill Name</label>
+      <input type="text" id="name" name="name" placeholder="Dinner at Thai Place" required>
+    </div>
+    
+    <div class="form-group">
+      <label for="currency">Currency</label>
+      <select id="currency" name="currency">
+        <option value="THB" selected>🇹🇭 Thai Baht (฿)</option>
+        <option value="USD">🇺🇸 US Dollar ($)</option>
+        <option value="EUR">🇪🇺 Euro (€)</option>
+        <option value="GBP">🇬🇧 British Pound (£)</option>
+        <option value="JPY">🇯🇵 Japanese Yen (¥)</option>
+      </select>
+    </div>
+    
+    <div class="form-actions">
+      <a href="/" class="btn">Cancel</a>
+      <button type="submit" class="btn btn-primary">Create Bill</button>
+    </div>
+  </form>
+</div>
+`, title: 'New Bill', user: user }) %>
